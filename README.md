@@ -28,15 +28,35 @@ Portail Radiant ──bouton page Case──▶ LibreChat (modale iframe)
 | `agent/assistant-radiant.json` | L'agent LibreChat : modèle, **instructions complètes** (modèle de données Radiant + méthode d'analyse en 3-4 requêtes + style de réponse concis) et liste d'outils élaguée (lecture seule) |
 | `prompts/questions-cliniques.json` | Les 5 questions cliniques sauvegardées (variants rares, de novo, hétérozygotes composés, Exomiser, phénotypes) |
 
-## Installation (dev local)
+## Installation — bootstrap scripté d'une instance
 
-Prérequis : Docker + docker compose, accès réseau à la zone qlin (VPN), un client Keycloak dans le realm `qlin` avec les redirect URIs `http://localhost:3080/*` autorisées, une clé API Anthropic (POC).
+Prérequis : Docker + docker compose, `jq`, accès réseau à la zone qlin (VPN), un client Keycloak dans le realm `qlin` avec les redirect URIs LibreChat autorisées, une clé API Anthropic (POC) ou Bedrock (zone).
 
-1. **LibreChat** : cloner [LibreChat](https://github.com/danny-avila/LibreChat), y copier `librechat/librechat.yaml`, `librechat/docker-compose.override.yml` et un `.env` rempli depuis `librechat/.env.example`, puis `docker compose up -d api mongodb meilisearch`.
-2. **Agent** : dans LibreChat → Agents → créer un agent et coller le contenu d'`agent/assistant-radiant.json` (nom, modèle, instructions) ; attacher les outils MCP `radiant` listés dans `tools` (après avoir connecté le serveur MCP une première fois). Noter l'`agent_id`.
-3. **Questions sauvegardées** : panneau Prompts → créer les 5 entrées de `prompts/questions-cliniques.json` → activer le partage global.
-4. **Portail** : branche `feat/SJRA-XXXX-assistant-ia` du dépôt radiant-portal (bouton + modale dans `apps/case/src/entity/layout/header.tsx`). Y mettre l'`agent_id` de l'étape 2 et l'URL LibreChat.
-5. **Réglage utilisateur recommandé** : Paramètres → Chat → Prompts → désactiver « Envoyer les prompts à la sélection » (permet d'éditer une question avant envoi).
+```bash
+# 1. LibreChat : cloner l'upstream, y déposer la config de ce dépôt
+git clone https://github.com/danny-avila/LibreChat && cd LibreChat
+cp <ce-dépôt>/librechat/librechat.yaml .
+cp <ce-dépôt>/librechat/docker-compose.override.yml .
+cp <ce-dépôt>/librechat/.env.example .env   # puis remplir les secrets
+docker compose up -d api mongodb meilisearch
+
+# 2. Premier login (crée l'utilisateur en base) : ouvrir http://localhost:3080
+#    → bouton OpenID (SSO Keycloak)
+
+# 3. Seeder l'agent et les banques de questions (depuis ce dépôt)
+./scripts/seed-agent.sh agent/assistant-radiant.json     # affiche l'agent_id
+./scripts/seed-prompts.sh prompts/questions-fr.json
+./scripts/seed-prompts.sh prompts/questions-en.json
+
+# 4. Portail : branche feat/SJRA-1835-assistant-ia du dépôt radiant-portal ;
+#    reporter l'agent_id de l'étape 3 (LIBRECHAT_AGENT_ID) et l'URL LibreChat.
+```
+
+Réglage utilisateur recommandé : Paramètres → Chat → Prompts → désactiver « Envoyer les prompts à la sélection » (permet d'éditer une question avant envoi).
+
+**Démos bilingues** : supprimer les questions d'une langue dans le panneau Prompts, puis les recréer avec `seed-prompts.sh prompts/questions-<fr|en>.json`.
+
+⚠️ L'agent et les questions vivent dans MongoDB (pas dans les fichiers) : sur toute nouvelle instance, l'`agent_id` change — les scripts de seed sont la source de vérité, pas la base d'une instance précédente.
 
 ## Pièges connus (résolus — détail dans la page Notion)
 
