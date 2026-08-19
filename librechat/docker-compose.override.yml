@@ -1,4 +1,24 @@
 services:
+  # Recherche de littérature biomédicale (PubMed/PubTator3, MyVariant.info,
+  # ClinicalTrials.gov) — serveur MCP Python séparé, exposé en streamable-http.
+  # POC : installation pip au démarrage ; en production, bâtir une image dédiée.
+  biomcp:
+    container_name: biomcp
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM python:3.12-slim
+        RUN pip install --no-cache-dir biomcp-python
+        CMD ["biomcp", "run", "--mode", "streamable_http"]
+    restart: always
+    # Partage l'espace réseau du conteneur LibreChat : la protection
+    # anti-DNS-rebinding de FastMCP n'accepte que Host=localhost, donc
+    # LibreChat l'atteint en http://localhost:8000 dans son propre namespace.
+    # NB : si le conteneur api est recréé/redémarré, redémarrer biomcp aussi.
+    network_mode: "service:api"
+    depends_on:
+      - api
+
   api:
     volumes:
       - type: bind

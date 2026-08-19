@@ -7,6 +7,24 @@ mcpSettings:
     # Serveur d'autorisation OAuth du MCP (Keycloak) — résout en IP privée via VPN,
     # doit être explicitement autorisé pour le flux OAuth par utilisateur.
     - auth.dev.qlin.aws.sante.quebec
+    # Conteneur BioMCP (littérature biomédicale) — partage le namespace réseau
+    # du conteneur api, joignable en localhost:8000.
+    - localhost
+
+endpoints:
+  all:
+    # Titrage des conversations : format déterministe pour les analyses de case,
+    # afin de retrouver facilement une conversation dans l'historique.
+    # Le placeholder {convo} est obligatoire : LibreChat y injecte la conversation.
+    titlePrompt: |
+      Generate a concise title for the conversation below.
+      MANDATORY RULE: if the conversation concerns a specific case identified by a number
+      (e.g. "case 8", "Case 1003"), the title MUST be exactly "Case <number> Analysis"
+      (e.g. "Case 8 Analysis") — nothing else, regardless of the conversation language.
+      Otherwise: 5 words maximum, in the language of the conversation, no quotes, no punctuation.
+
+      Conversation:
+      {convo}
 
 interface:
   # Autorise l'auto-envoi du prompt passé en URL depuis le portail Radiant
@@ -30,4 +48,12 @@ mcpServers:
       # offline_access : le refresh token survit à l'expiration de la session SSO
       # (sinon reconnexion MCP exigée chaque jour — invalid_grant "Token is not active")
       scope: 'openid email profile offline_access'
+    serverInstructions: true
+
+  # Littérature biomédicale : PubMed/PubTator3 (variants normalisés — héritier
+  # de LitVar), MyVariant.info, ClinicalTrials.gov. APIs publiques, pas d'OAuth.
+  biomcp:
+    type: streamable-http
+    url: http://localhost:8000/mcp
+    timeout: 120000
     serverInstructions: true

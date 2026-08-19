@@ -58,6 +58,14 @@ Réglage utilisateur recommandé : Paramètres → Chat → Prompts → désacti
 
 ⚠️ L'agent et les questions vivent dans MongoDB (pas dans les fichiers) : sur toute nouvelle instance, l'`agent_id` change — les scripts de seed sont la source de vérité, pas la base d'une instance précédente.
 
+## Recherche de littérature (BioMCP)
+
+Le `docker-compose.override.yml` inclut un service **biomcp** ([genomoncology/biomcp](https://github.com/genomoncology/biomcp)) : littérature PubMed/PubTator3 (noms de variants normalisés), annotations MyVariant.info, ClinicalTrials.gov. Il partage l'espace réseau du conteneur `api` (la protection anti-DNS-rebinding de FastMCP n'accepte que `Host: localhost`) — d'où l'URL `http://localhost:8000/mcp` dans le yaml. 5 outils attachés à l'agent (article_searcher/getter, variant_searcher/getter, gene_getter), avec interdiction explicite d'envoyer toute donnée patient à ces APIs publiques. **Après tout redémarrage du conteneur `api`, redémarrer `biomcp`** (`docker compose restart biomcp`).
+
+## Réglages utilisateur recommandés
+
+Dans Paramètres → Chat : désactiver « Envoyer les prompts à la sélection » (édition des questions avant envoi), désactiver « Ouvrir les menus déroulants de réflexion par défaut » et « autoExpandTools » (blocs Pensées/outils repliés, consultables au clic). Réglages par navigateur — à documenter dans le guide d'accueil des utilisateurs.
+
 ## Pièges connus (résolus — détail dans la page Notion)
 
 - **Allowlist anti-SSRF** : déclarer le domaine du MCP **et** celui du Keycloak dans `mcpSettings.allowedDomains`, sinon `Domain not allowed` / `resolves to a private IP address`.
@@ -65,6 +73,9 @@ Réglage utilisateur recommandé : Paramètres → Chat → Prompts → désacti
 - **Reconnexion MCP quotidienne** : sans `offline_access` dans le scope, le refresh token meurt avec la session SSO (`invalid_grant: Token is not active`).
 - **Iframe** : Keycloak refuse de s'afficher dans la modale (`X-Frame-Options`) → premier login dans un onglet normal.
 - **`.env` relu au démarrage seulement** : redémarrer le conteneur après toute modification.
+- **`titlePrompt` doit contenir `{convo}`** : LibreChat y injecte la conversation ; sans lui, le générateur titre à l'aveugle (« Empty conversation with no content »).
+- **`endpoints.all` remplace, ne fusionne pas** : c'est la config lue en priorité pour le titrage — y mettre tous les champs voulus.
+- **Chaque redémarrage du conteneur `api` coupe les connexions MCP en mémoire** : la première conversation suivante redemande brièvement « Authenticate » (disparaît avec l'OBO en production).
 
 ## Sécurité
 
