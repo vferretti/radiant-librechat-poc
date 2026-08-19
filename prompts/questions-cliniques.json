@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Variants rares délétères",
+    "oneliner": "ClinVar pathogéniques rares du case",
+    "category": "idea",
+    "prompt": "Pour le case en contexte, liste les variants rares (gnomAD < 1 %) classés Pathogenic ou Likely pathogenic dans ClinVar, avec zygosité, origine parentale et impact VEP. Présente-les en tableau."
+  },
+  {
+    "name": "Variants de novo",
+    "oneliner": "De novo confirmés par le trio",
+    "category": "idea",
+    "prompt": "Y a-t-il des variants de novo confirmés par le trio pour ce case ? Priorise ceux absents de gnomAD avec impact HIGH ou MODERATE, et indique la profondeur de lecture et le ratio allélique pour juger la fiabilité de l’appel."
+  },
+  {
+    "name": "Hétérozygotes composés",
+    "oneliner": "Deux variants en trans dans un même gène",
+    "category": "idea",
+    "prompt": "Pour ce case, cherche les gènes portant deux variants rares (gnomAD < 1 %) hérités chacun d’un parent différent (configuration trans). Ne retiens que les impacts HIGH ou MODERATE et vérifie la cohérence avec un mode de transmission récessif OMIM."
+  },
+  {
+    "name": "Classement Exomiser",
+    "oneliner": "Top 10 Exomiser et concordance phénotypique",
+    "category": "idea",
+    "prompt": "Montre le top 10 du classement Exomiser pour ce case (rang, gène, mode d’hérédité, scores) et commente la concordance de chaque gène avec les phénotypes HPO observés. Signale les candidats introniques ou de faible plausibilité biologique."
+  },
+  {
+    "name": "Phénotypes et panels",
+    "oneliner": "HPO du case et gènes associés",
+    "category": "idea",
+    "prompt": "Détaille les phénotypes HPO positifs de ce case (code et libellé), puis liste les gènes associés à ces phénotypes selon les panels HPO. Indique quels gènes reviennent pour plusieurs phénotypes."
+  }
+]

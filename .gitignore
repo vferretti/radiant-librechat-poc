@@ -1,0 +1,6 @@
+# Jamais de secrets
+.env
+*.env
+!*.env.example
+*.pem
+*.key
