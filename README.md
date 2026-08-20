@@ -68,6 +68,8 @@ Dans Paramètres → Chat : désactiver « Envoyer les prompts à la sélection 
 
 ## Pièges connus (résolus — détail dans la page Notion)
 
+- **Instructions d'agent en anglais obligatoire pour le bilinguisme** : des instructions rédigées en français font répondre l'agent en français même à un message anglais (la masse du prompt système dicte la langue). Instructions en anglais + règle de langue absolue en tête = bascule fiable FR/EN selon le message de l'utilisateur.
+
 - **Allowlist anti-SSRF** : déclarer le domaine du MCP **et** celui du Keycloak dans `mcpSettings.allowedDomains`, sinon `Domain not allowed` / `resolves to a private IP address`.
 - **DCR refusé** : le Keycloak de la zone rejette l'enregistrement dynamique de client (« Trusted Hosts ») → client OAuth pré-configuré obligatoire (bloc `oauth:` du yaml).
 - **Reconnexion MCP quotidienne** : sans `offline_access` dans le scope, le refresh token meurt avec la session SSO (`invalid_grant: Token is not active`).
