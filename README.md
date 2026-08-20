@@ -26,7 +26,8 @@ Portail Radiant ──bouton page Case──▶ LibreChat (modale iframe)
 | `librechat/docker-compose.override.yml` | Montage du `librechat.yaml` dans le conteneur |
 | `librechat/.env.example` | Variables d'environnement (placeholders — **jamais de secrets dans ce dépôt**) |
 | `agent/assistant-radiant.json` | L'agent LibreChat : modèle, **instructions complètes** (modèle de données Radiant + méthode d'analyse en 3-4 requêtes + style de réponse concis) et liste d'outils élaguée (lecture seule) |
-| `prompts/questions-cliniques.json` | Les 5 questions cliniques sauvegardées (variants rares, de novo, hétérozygotes composés, Exomiser, phénotypes) |
+| `prompts/questions-{fr,en}.json` | Les banques de questions cliniques sauvegardées (variants rares, de novo, hétérozygotes composés, Exomiser, phénotypes) |
+| `radiant-tools/server.py` | **Bibliothèque d'outils de visualisation** (serveur MCP « viz ») : `venn_trio` / `venn_duo` — diagrammes de Venn des SNV familiaux, rendus en image dans la conversation |
 
 ## Installation — bootstrap scripté d'une instance
 
@@ -61,6 +62,12 @@ Réglage utilisateur recommandé : Paramètres → Chat → Prompts → désacti
 ## Recherche de littérature (BioMCP)
 
 Le `docker-compose.override.yml` inclut un service **biomcp** ([genomoncology/biomcp](https://github.com/genomoncology/biomcp)) : littérature PubMed/PubTator3 (noms de variants normalisés), annotations MyVariant.info, ClinicalTrials.gov. Il partage l'espace réseau du conteneur `api` (la protection anti-DNS-rebinding de FastMCP n'accepte que `Host: localhost`) — d'où l'URL `http://localhost:8000/mcp` dans le yaml. 5 outils attachés à l'agent (article_searcher/getter, variant_searcher/getter, gene_getter), avec interdiction explicite d'envoyer toute donnée patient à ces APIs publiques. **Après tout redémarrage du conteneur `api`, redémarrer `biomcp`** (`docker compose restart biomcp`).
+
+## Bibliothèque d'outils de visualisation (serveur MCP « viz »)
+
+Patron pour rendre réutilisable tout traitement que l'agent referait laborieusement à chaque case : **StarRocks agrège (une requête SQL, recette dans les instructions de l'agent) → un outil maison rend le résultat** (image affichée dans la conversation). Premier duo d'outils : `venn_trio`/`venn_duo` (chevauchement des SNV d'une famille, cercles non à l'échelle, palette pastel, étiquettes dans la langue de la question). Seuls des **comptes agrégés** transitent par le modèle — jamais de listes de variants ni de données patient.
+
+Pour **ajouter un outil** : une fonction `@mcp.tool()` de plus dans `radiant-tools/server.py` (candidats : pedigree, couverture, tableau ACMG…), `docker compose build radiant-tools && docker compose up -d radiant-tools`, attacher l'outil à l'agent et documenter la recette dans ses instructions. Comme biomcp, le conteneur partage le namespace réseau d'`api` (port **8001**) — le redémarrer après tout redémarrage d'`api`. À maturité, ces outils ont vocation à migrer dans le MCP Radiant officiel.
 
 ## Réglages utilisateur recommandés
 

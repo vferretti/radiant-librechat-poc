@@ -19,6 +19,23 @@ services:
     depends_on:
       - api
 
+  # Outils de visualisation maison (MCP « viz ») — premier outil : venn_trio.
+  # Même contrainte réseau que biomcp (Host=localhost) → namespace partagé, port 8001.
+  radiant-tools:
+    container_name: radiant-tools
+    build:
+      context: ./radiant-tools
+      dockerfile_inline: |
+        FROM python:3.12-slim
+        RUN pip install --no-cache-dir "mcp[cli]<2" matplotlib matplotlib-venn
+        COPY server.py /srv/server.py
+        ENV FASTMCP_PORT=8001
+        CMD ["python", "/srv/server.py"]
+    restart: always
+    network_mode: "service:api"
+    depends_on:
+      - api
+
   api:
     volumes:
       - type: bind

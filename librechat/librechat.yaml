@@ -57,3 +57,10 @@ mcpServers:
     url: http://localhost:8000/mcp
     timeout: 120000
     serverInstructions: true
+
+  # Outils de visualisation maison (venn_trio) — conteneur radiant-tools, port 8001.
+  viz:
+    type: streamable-http
+    url: http://localhost:8001/mcp
+    timeout: 60000
+    serverInstructions: true
