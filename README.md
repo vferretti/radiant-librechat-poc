@@ -65,6 +65,38 @@ Réglage utilisateur recommandé : Paramètres → Chat → Prompts → désacti
 
 Le `docker-compose.override.yml` inclut un service **biomcp** ([genomoncology/biomcp](https://github.com/genomoncology/biomcp)) : littérature PubMed/PubTator3 (noms de variants normalisés), annotations MyVariant.info, ClinicalTrials.gov. Il partage l'espace réseau du conteneur `api` (la protection anti-DNS-rebinding de FastMCP n'accepte que `Host: localhost`) — d'où l'URL `http://localhost:8000/mcp` dans le yaml. 5 outils attachés à l'agent (article_searcher/getter, variant_searcher/getter, gene_getter), avec interdiction explicite d'envoyer toute donnée patient à ces APIs publiques. **Après tout redémarrage du conteneur `api`, redémarrer `biomcp`** (`docker compose restart biomcp`).
 
+## Redémarrer l'environnement au quotidien
+
+Une fois l'installation faite, relancer la POC après un redémarrage du poste (ou une session fermée) :
+
+```bash
+# 1. LibreChat + MCP (les conteneurs survivent aux redémarrages de session,
+#    mais pas à un reboot ; -d = arrière-plan)
+cd ~/src/LibreChat
+docker compose up -d api mongodb meilisearch biomcp radiant-tools
+
+# 2. Portail Radiant (s'arrête avec la session — à relancer à chaque fois)
+cd ~/src/radiant-portal/frontend/portals/radiant
+npm run dev:radiant          # → http://localhost:3000  (LibreChat : http://localhost:3080)
+```
+
+Après avoir redémarré **uniquement** le conteneur `api` (ex. changement de `librechat.yaml` ou de `.env`) :
+
+```bash
+cd ~/src/LibreChat && docker compose restart api && sleep 5 && docker compose restart biomcp radiant-tools
+```
+
+Vérifications utiles :
+
+```bash
+docker ps --format "{{.Names}}\t{{.Status}}"                      # conteneurs actifs
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3080/login   # LibreChat (attendu 200)
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/        # portail (attendu 302 → Keycloak)
+# Keycloak de la zone joignable ? (attendu 200 ; 404 = panne côté zone, rien à corriger ici)
+curl -s -o /dev/null -w "%{http_code}\n" https://auth.dev.qlin.aws.sante.quebec/realms/qlin/.well-known/openid-configuration
+docker logs LibreChat --since 2m 2>&1 | grep -E "\[MCP\] Initialized"  # attendu : 3 serveurs
+```
+
 ## Bibliothèque d'outils de visualisation (serveur MCP « viz »)
 
 Patron pour rendre réutilisable tout traitement que l'agent referait laborieusement à chaque case : **StarRocks agrège (une requête SQL, recette dans les instructions de l'agent) → un outil maison rend le résultat** (image affichée dans la conversation). Premier duo d'outils : `venn_trio`/`venn_duo` (chevauchement des SNV d'une famille, cercles non à l'échelle, palette pastel, étiquettes dans la langue de la question). Seuls des **comptes agrégés** transitent par le modèle — jamais de listes de variants ni de données patient.
