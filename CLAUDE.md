@@ -78,6 +78,42 @@ qui ne voyage pas par git :
 - API Anthropic : erreurs 529 « Overloaded » épisodiques sur Opus 5 → l'agent
   tourne sur `claude-opus-4-8` (bon compromis).
 
+## Chantier en attente : rapports cliniques par gabarit
+
+**Statut : en attente du gabarit + de la bibliothèque d'énoncés des généticiens
+(Vincent les a demandés).** Approche retenue lors de la discussion du 2026-08-20 :
+
+- **Trois pièces distinctes** : (1) le *gabarit* = structure rédactionnelle
+  (prompt sauvegardé si 2-5 gabarits ; outil `get_report_template` servant des
+  fichiers versionnés si multi-gabarits/traçabilité clinique) ; (2) la collecte
+  = les outils MCP existants (`read_query`, `article_searcher`) ; (3) le rendu
+  = Markdown dans la conversation d'abord, outil `render_report` (.docx via
+  python-docx dans la biblio viz) seulement quand le fond est stabilisé.
+- **Bibliothèque d'énoncés pré-définis** (les généticiens sélectionnent des
+  textes approuvés, ils ne rédigent pas) : **doit vivre dans un outil MCP adossé
+  à une source de données**, pas dans le prompt (volume, gouvernance, verbatim
+  garanti). Stockage cible : table PostgreSQL du portail avec UI d'admin (ou
+  fichiers YAML versionnés pour la POC). **Vérifier d'abord si Radiant a déjà
+  des énoncés structurés** (tables `interpretation_germline`/`_somatic`,
+  dialogue d'interprétation) — s'y greffer plutôt que créer un silo.
+  Modèle d'énoncé : `id, section, category, language, text avec {{placeholders}},
+  version, approved_by/on`. Les placeholders sont remplis depuis les données de
+  l'occurrence → le texte reste approuvé mot pour mot.
+- **Rôle de l'agent = proposer, pas rédiger** : collecte → `search_report_statements(section)`
+  → propose 2-3 énoncés justifiés par section → le généticien choisit →
+  assemblage **verbatim**, sections sans énoncé marquées `[à compléter]`.
+- **Agent dédié** « Rapport clinique » (séparé de « IA Radiant ») : instructions
+  de nature différente, effort de raisonnement plus élevé, garde-fous stricts
+  (rien d'inventé, chaque affirmation traçable à une requête ou un PMID, mention
+  de brouillon non validé dans le gabarit, aucune PII vers BioMCP, annexe des
+  requêtes exécutées pour l'auditabilité).
+- **Démarrage recommandé** : UNE section (ex. conclusion d'interprétation),
+  10-15 énoncés en YAML dans ce dépôt, outil de recherche, validation du patron
+  par les généticiens AVANT d'investir dans la table PostgreSQL et l'UI.
+- Questions ouvertes à poser aux généticiens : les énoncés existent-ils déjà
+  sous forme structurée (Word partagé, autre logiciel, table) ? Sont-ils
+  bilingues (sinon, prévoir FR/EN comme pour les questions sauvegardées) ?
+
 ## Idées en réserve (discutées, non implémentées)
 
 Prochains outils viz (pedigree, couverture, tableau ACMG) ; questions par
