@@ -38,8 +38,10 @@ Prérequis : Docker + docker compose, `jq`, accès réseau à la zone qlin (VPN)
 git clone https://github.com/danny-avila/LibreChat && cd LibreChat
 cp <ce-dépôt>/librechat/librechat.yaml .
 cp <ce-dépôt>/librechat/docker-compose.override.yml .
+cp -r <ce-dépôt>/radiant-tools ./radiant-tools   # code du serveur MCP « viz » (contexte de build)
 cp <ce-dépôt>/librechat/.env.example .env   # puis remplir les secrets
 docker compose up -d api mongodb meilisearch
+docker compose up -d biomcp radiant-tools   # après api (namespace réseau partagé)
 
 # 2. Premier login (crée l'utilisateur en base) : ouvrir http://localhost:3080
 #    → bouton OpenID (SSO Keycloak)
