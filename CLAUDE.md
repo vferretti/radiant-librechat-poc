@@ -114,6 +114,41 @@ qui ne voyage pas par git :
   sous forme structurée (Word partagé, autre logiciel, table) ? Sont-ils
   bilingues (sinon, prévoir FR/EN comme pour les questions sauvegardées) ?
 
+## Backlog : écriture dans le dossier (drapeaux, interprétation)
+
+Discuté le 2026-08-26. Passage de « assistant qui consulte » à « assistant qui
+prépare des actes cliniques » — à ne pas implémenter à la légère.
+
+**Verrou technique commun** : l'agent n'a que des outils de lecture
+(`write_query` retiré volontairement), et de toute façon les écritures ne
+doivent PAS passer par StarRocks/le catalogue fédéré mais par **l'API REST du
+portail** (qui porte ses propres autorisations et la traçabilité). Un outil MCP
+d'écriture doit donc relayer vers l'API avec le **JWT de l'utilisateur**
+(en-tête `{{LIBRECHAT_USER_*}}` ou OBO), jamais avec un compte de service.
+
+1. **Drapeaux d'occurrence** (« marque ce variant d'un drapeau »). Table
+   `occurrence_flag`, `flag_type` ∈ **`flag` / `pin` / `star`** (ce ne sont pas
+   des couleurs). Outil cible : `set_occurrence_flag(case_id, seq_id, locus_id,
+   flag_type)` dans le MCP Radiant officiel. Exiger une **confirmation
+   explicite par appel** (LibreChat sait imposer l'approbation par outil).
+2. **Formulaire d'interprétation** (pré-remplissage, surtout les publications).
+   Le modèle s'y prête très bien (`InterpretationGermline` :
+   `pubmed[]{citation_id, citation}`, `classification`,
+   `classification_criterias[]`, `transmission_modes[]`, `condition`,
+   `interpretation`). **MAIS** `created_by`/`updated_by` font de
+   l'enregistrement un acte signé : l'IA ne doit jamais écrire sous l'identité
+   du généticien.
+   - **Étape 1 (faisable tout de suite, zéro code)** : l'agent produit une
+     proposition structurée (PMID + critères + texte candidat) que le
+     généticien copie dans le formulaire. À faire en même temps que le chantier
+     « rapports cliniques » — mêmes garde-fous, même gabarit.
+   - **Étape 2 (cible, avec l'équipe Radiant)** : outil
+     `propose_interpretation(...)` écrivant un **brouillon** (statut distinct,
+     attribué à l'assistant), que le formulaire affiche comme suggestion à
+     accepter/refuser champ par champ ; c'est le clic du généticien qui écrit.
+     Demande un ajout au modèle de données (notion de brouillon/proposition,
+     inexistante aujourd'hui) et à l'UI du portail.
+
 ## Idées en réserve (discutées, non implémentées)
 
 Prochains outils viz (pedigree, couverture, tableau ACMG) ; questions par
