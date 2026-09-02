@@ -64,5 +64,16 @@
       "type": "text",
       "prompt": "Donne-moi tout ce que la base contient sur cette occurrence de variant?"
     }
+  },
+  {
+    "group": {
+      "name": "Proposition d'interprétation",
+      "category": "idea",
+      "oneliner": "Formulaire d'interprétation germinale pré-rempli"
+    },
+    "prompt": {
+      "type": "text",
+      "prompt": "Prépare une proposition d'interprétation clinique pour ce variant."
+    }
   }
 ]

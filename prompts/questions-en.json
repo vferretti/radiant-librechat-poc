@@ -64,5 +64,16 @@
       "type": "text",
       "prompt": "Give me everything the database holds on this variant occurrence ?"
     }
+  },
+  {
+    "group": {
+      "name": "Interpretation proposal",
+      "category": "idea",
+      "oneliner": "Pre-filled germline interpretation form"
+    },
+    "prompt": {
+      "type": "text",
+      "prompt": "Prepare a proposed clinical interpretation for this variant."
+    }
   }
 ]
