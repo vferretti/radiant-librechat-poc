@@ -86,8 +86,9 @@ qui ne voyage pas par git :
    `agent/assistant-radiant.json`, puis `PATCH /api/agents/<agent_id>` avec
    `{"instructions": "…"}`, même jeton et même User-Agent ; vérifier que le
    dépôt et Mongo sont identiques avant de commiter.
-   ⚠️ Deux questions créées à la main par Vincent ne sont **pas** dans le dépôt
-   (« Variants prioritaires », « Diagramme de venn ») : elles seront perdues.
+   Les 9 questions de la banque sont versionnées dans `prompts/` (FR et EN),
+   y compris « Variants prioritaires » et « Diagramme de Venn » créées à la main
+   dans l'interface puis récupérées depuis Mongo le 2026-09-03.
 3. Premier login LibreChat en SSO **dans un onglet** (Keycloak refuse l'iframe),
    puis « Authenticate » sur radiant (une fois — offline_access ensuite).
 4. Réglages navigateur par utilisateur (à refaire) : Paramètres → Chat :

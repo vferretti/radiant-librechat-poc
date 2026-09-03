@@ -75,5 +75,27 @@
       "type": "text",
       "prompt": "Prepare a proposed clinical interpretation for this variant."
     }
+  },
+  {
+    "group": {
+      "name": "Priority variants",
+      "category": "idea",
+      "oneliner": "Candidates to consider first"
+    },
+    "prompt": {
+      "type": "text",
+      "prompt": "What would be the priority variants to consider?"
+    }
+  },
+  {
+    "group": {
+      "name": "Venn diagram",
+      "category": "idea",
+      "oneliner": "How variants are shared within the family"
+    },
+    "prompt": {
+      "type": "text",
+      "prompt": "Draw me a Venn diagram for this family (rare variants with high VEP impact)"
+    }
   }
 ]
