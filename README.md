@@ -25,7 +25,7 @@ Portail Radiant ──bouton page Case──▶ LibreChat (modale iframe)
 | `librechat/librechat.yaml` | Config LibreChat : allowlist des domaines MCP/OAuth, serveur MCP `radiant` avec client OAuth pré-configuré (`offline_access` pour survivre à l'expiration de session SSO) |
 | `librechat/docker-compose.override.yml` | Montage du `librechat.yaml` dans le conteneur |
 | `librechat/.env.example` | Variables d'environnement (placeholders — **jamais de secrets dans ce dépôt**) |
-| `agent/assistant-radiant.json` | L'agent LibreChat : modèle, **instructions complètes** (modèle de données Radiant + méthode d'analyse en 3-4 requêtes + style de réponse concis) et liste d'outils élaguée (lecture seule) |
+| `agent/assistant-radiant.json` | L'agent LibreChat : modèle, **instructions complètes** (modèle de données Radiant + méthode d'analyse en 3-4 requêtes + style de réponse concis) et liste d'outils **en lecture seule** (`write_query` volontairement non attaché) |
 | `prompts/questions-{fr,en}.json` | Les banques de questions cliniques sauvegardées (variants rares, de novo, hétérozygotes composés, Exomiser, phénotypes) |
 | `radiant-tools/server.py` | **Bibliothèque d'outils de visualisation** (serveur MCP « viz ») : `venn_trio` / `venn_duo` — diagrammes de Venn des SNV familiaux, rendus en image dans la conversation |
 
@@ -63,7 +63,7 @@ Réglage utilisateur recommandé : Paramètres → Chat → Prompts → désacti
 
 ## Recherche de littérature (BioMCP)
 
-Le `docker-compose.override.yml` inclut un service **biomcp** ([genomoncology/biomcp](https://github.com/genomoncology/biomcp)) : littérature PubMed/PubTator3 (noms de variants normalisés), annotations MyVariant.info, ClinicalTrials.gov. Il partage l'espace réseau du conteneur `api` (la protection anti-DNS-rebinding de FastMCP n'accepte que `Host: localhost`) — d'où l'URL `http://localhost:8000/mcp` dans le yaml. 5 outils attachés à l'agent (article_searcher/getter, variant_searcher/getter, gene_getter), avec interdiction explicite d'envoyer toute donnée patient à ces APIs publiques. **Après tout redémarrage du conteneur `api`, redémarrer `biomcp`** (`docker compose restart biomcp`).
+Le `docker-compose.override.yml` inclut un service **biomcp** ([genomoncology/biomcp](https://github.com/genomoncology/biomcp)) : littérature PubMed/PubTator3 (noms de variants normalisés), annotations MyVariant.info, ClinicalTrials.gov. Il partage l'espace réseau du conteneur `api` (la protection anti-DNS-rebinding de FastMCP n'accepte que `Host: localhost`) — d'où l'URL `http://localhost:8000/mcp` dans le yaml. Les 36 outils du serveur sont attachés à l'agent (littérature, essais cliniques, openFDA, Enrichr, AlphaGenome), avec interdiction explicite d'envoyer toute donnée patient à ces APIs publiques. **Après tout redémarrage du conteneur `api`, redémarrer `biomcp`** (`docker compose restart biomcp`).
 
 ## Redémarrer l'environnement au quotidien
 
