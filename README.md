@@ -31,7 +31,7 @@ Portail Radiant ──bouton page Case──▶ LibreChat (modale iframe)
 
 ## Installation — bootstrap scripté d'une instance
 
-Prérequis : Docker + docker compose, `jq`, accès réseau à la zone qlin (VPN), un client Keycloak dans le realm `qlin` avec les redirect URIs LibreChat autorisées, une clé API Anthropic (POC) ou Bedrock (zone).
+Prérequis : Docker + docker compose, `jq`, accès réseau à la zone qlin (VPN), un client Keycloak dans le realm `qlin` (`radiant-local`, partagé avec le portail) avec les redirect URIs LibreChat autorisées, une clé API Anthropic (POC) ou Bedrock (zone).
 
 ```bash
 # 1. LibreChat : cloner l'upstream, y déposer la config de ce dépôt
@@ -112,7 +112,8 @@ Dans Paramètres → Chat : désactiver « Envoyer les prompts à la sélection 
 - **Instructions d'agent en anglais obligatoire pour le bilinguisme** : des instructions rédigées en français font répondre l'agent en français même à un message anglais (la masse du prompt système dicte la langue). Instructions en anglais + règle de langue absolue en tête = bascule fiable FR/EN selon le message de l'utilisateur.
 
 - **Allowlist anti-SSRF** : déclarer le domaine du MCP **et** celui du Keycloak dans `mcpSettings.allowedDomains`, sinon `Domain not allowed` / `resolves to a private IP address`.
-- **DCR refusé** : le Keycloak de la zone rejette l'enregistrement dynamique de client (« Trusted Hosts ») → client OAuth pré-configuré obligatoire (bloc `oauth:` du yaml).
+- **DCR refusé** : le Keycloak de la zone rejette l'enregistrement dynamique de client (« Trusted Hosts ») → client OAuth pré-configuré obligatoire (bloc `oauth:` du yaml), aujourd'hui `radiant-local`, le même que le portail (`KEYCLOAK_CLIENT`), avec le même secret.
+- **DNS intermittent (ENOTFOUND)** : poste branché en câble et en Wi-Fi ; seuls les résolveurs du câble connaissent la zone qlin. Couper le Wi-Fi (`nmcli radio wifi off`) puis recréer les conteneurs (`docker compose up -d --force-recreate api biomcp radiant-tools`).
 - **Reconnexion MCP quotidienne** : sans `offline_access` dans le scope, le refresh token meurt avec la session SSO (`invalid_grant: Token is not active`).
 - **Iframe** : Keycloak refuse de s'afficher dans la modale (`X-Frame-Options`) → premier login dans un onglet normal.
 - **`.env` relu au démarrage seulement** : redémarrer le conteneur après toute modification.

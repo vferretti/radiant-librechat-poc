@@ -38,12 +38,12 @@ mcpServers:
     url: https://mcp.dev.qlin.aws.sante.quebec/mcp/
     timeout: 120000
     # Client OAuth pré-configuré : le Keycloak qlin refuse l'enregistrement dynamique
-    # de client (politique « Trusted Hosts »), on réutilise donc le client `radiant`.
+    # de client (politique « Trusted Hosts »), on réutilise donc le client du portail (`radiant-local`).
     # Chaque utilisateur fait quand même SON flux d'autorisation → droits Ranger individuels.
     oauth:
       authorization_url: https://auth.dev.qlin.aws.sante.quebec/realms/qlin/protocol/openid-connect/auth
       token_url: https://auth.dev.qlin.aws.sante.quebec/realms/qlin/protocol/openid-connect/token
-      client_id: radiant
+      client_id: radiant-local
       client_secret: '${OPENID_CLIENT_SECRET}'
       # offline_access : le refresh token survit à l'expiration de la session SSO
       # (sinon reconnexion MCP exigée chaque jour — invalid_grant "Token is not active")

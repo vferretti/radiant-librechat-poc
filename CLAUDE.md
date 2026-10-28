@@ -56,9 +56,11 @@ Suivre le README (« bootstrap scripté »). En plus, transférer **à la main**
 qui ne voyage pas par git :
 
 1. **Secrets** : `frontend/portals/radiant/.env` du portail (Keycloak qlin :
-   realm `qlin`, client `radiant` + secret ; API_HOST de la zone) et `.env` de
-   LibreChat (remplir depuis `librechat/.env.example` : OPENID_CLIENT_SECRET =
-   même secret que le portail, ANTHROPIC_API_KEY).
+   realm `qlin`, `KEYCLOAK_CLIENT=radiant-local` + secret ; API_HOST de la zone) et
+   `.env` de LibreChat (remplir depuis `librechat/.env.example` : **même client
+   et même secret que le portail** → `OPENID_CLIENT_ID=radiant-local`,
+   OPENID_CLIENT_SECRET = KEYCLOAK_CLIENT_SECRET du portail ; ANTHROPIC_API_KEY).
+   `OPENID_SESSION_SECRET` n'a rien à voir avec Keycloak (`openssl rand -hex 32`).
 2. **MongoDB ne se transfère pas** : recréer agent + questions avec
    `scripts/seed-agent.sh` et `scripts/seed-prompts.sh` (× fr/en). ⚠️ Le
    nouvel `agent_id` DOIT être reporté dans
@@ -96,9 +98,16 @@ qui ne voyage pas par git :
 
 ## Pièges d'environnement (vécus, tous documentés au README + Notion)
 
-- DNS intermittent sur `*.dev.qlin.aws.sante.quebec` (deux résolveurs sur les
-  postes CHUSJ, un seul connaît la zone) → erreurs ENOTFOUND passagères,
-  y compris au démarrage de LibreChat (SSO non enregistré → redémarrer).
+- DNS intermittent sur `*.dev.qlin.aws.sante.quebec` : **cause trouvée le
+  2026-10-28** — poste branché en câble ET en Wi-Fi ; seuls les résolveurs du
+  câble (10.128.65.5/.6) connaissent la zone, ceux du Wi-Fi (172.16.64.13/.14)
+  non. Symptômes : ENOTFOUND au callback du portail, SSO LibreChat non
+  enregistré au démarrage. **Remède : `nmcli radio wifi off`**, puis recréer
+  les conteneurs (`docker compose up -d --force-recreate api biomcp radiant-tools`).
+- **Client Keycloak = `radiant-local`** (celui du portail), pas `radiant` :
+  `OPENID_CLIENT_ID` du `.env` LibreChat ET `client_id` du bloc
+  `mcpServers.radiant.oauth` du yaml. Un secret présenté au mauvais client
+  donne `401 unauthorized_client — Invalid client or Invalid client credentials`.
 - Keycloak zone : DCR refusé (Trusted Hosts) → client OAuth pré-configuré ;
   la zone a déjà eu une panne Keycloak (404 sur tous les realms) sans impact
   sur notre config.
